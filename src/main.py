@@ -6,20 +6,42 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from data.mnist import FashionMNISTDataModule
 from model.classfier import FashionMNISTClassfier
+from util.logger import ImagePredictionLogger
 
 
 def main(args):
     data = FashionMNISTDataModule(args.data_dir, args.batch_size, args.num_workers)
+    data.prepare_data()
+    data.setup()
+    samples = next(iter(data.val_dataloader()))
+    classes = (
+        "T-shirt/top",
+        "Trouser",
+        "Pullover",
+        "Dress",
+        "Coat",
+        "Sandal",
+        "Shirt",
+        "Sneaker",
+        "Bag",
+        "Ankle Boot",
+    )
+
     model = FashionMNISTClassfier()
     checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",
+        monitor="Validation Loss",
         dirpath=args.model_dir,
-        filename="fashion-mnist-v0-{epoch:02d}-{val_loss:.2f}",
+        filename="fashion-mnist-v1-{epoch:02d}-{Validation Loss:.2f}",
     )
-    early_stop_callback = EarlyStopping(monitor="val_loss", patience=5)
+    early_stop_callback = EarlyStopping(monitor="Validation Loss", patience=5)
+    image_prediction_callback = ImagePredictionLogger(samples, classes)
+
     logger = TensorBoardLogger(args.log_dir, name="classifier")
+
     trainer = pl.Trainer.from_argparse_args(
-        args, callbacks=[checkpoint_callback, early_stop_callback], logger=logger
+        args,
+        callbacks=[checkpoint_callback, early_stop_callback, image_prediction_callback],
+        logger=logger,
     )
 
     trainer.fit(model, datamodule=data)
