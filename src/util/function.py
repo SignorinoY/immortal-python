@@ -8,7 +8,7 @@ def matplotlib_imshow(img, one_channel=False):
     if one_channel:
         img = img.mean(dim=0)
     img = img / 2 + 0.5  # unnormalize
-    npimg = img.cpu().numpy()
+    npimg = img.numpy()
     if one_channel:
         plt.imshow(npimg, cmap="Greys")
     else:
@@ -23,7 +23,7 @@ def images_to_probs(model, images):
     output = model(images)
     # convert output probabilities to predicted class
     _, preds_tensor = torch.max(output, 1)
-    preds = np.squeeze(preds_tensor.cpu().numpy())
+    preds = torch.squeeze(preds_tensor)
     return preds, [F.softmax(el, dim=0)[i].item() for i, el in zip(preds, output)]
 
 
@@ -40,7 +40,7 @@ def plot_classes_preds(model, images, labels, classes):
     fig = plt.figure(figsize=(4, 5))
     for idx in np.arange(4):
         ax = fig.add_subplot(2, 2, idx + 1, xticks=[], yticks=[])
-        matplotlib_imshow(images[idx], one_channel=True)
+        matplotlib_imshow(images[idx].cpu(), one_channel=True)
         ax.set_title(
             "{0}, {1:.1f}%\n(label: {2})".format(
                 classes[preds[idx]], probs[idx] * 100.0, classes[labels[idx]]
