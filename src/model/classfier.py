@@ -44,14 +44,14 @@ class FashionMNISTClassfier(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
-        self.log("Train Loss", loss)
+        self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
-        self.log("Validation Loss", loss)
+        self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
