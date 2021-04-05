@@ -8,12 +8,17 @@ from torchvision.datasets import FashionMNIST
 
 class FashionMNISTDataModule(pl.LightningDataModule):
     def __init__(
-        self, data_dir: str = "./data/", batch_size: int = 32, num_workers: int = 0
+        self,
+        data_dir: str = "./data/",
+        batch_size: int = 32,
+        num_workers: int = 0,
+        pin_memory: bool = False,
     ):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.pin_memory = pin_memory
         self.transform = transforms.Compose(
             [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
         )
@@ -36,17 +41,24 @@ class FashionMNISTDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.train,
-            batch_size=self.batch_size,
             shuffle=True,
+            batch_size=self.batch_size,
             num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val, batch_size=self.batch_size, num_workers=self.num_workers
+            self.val,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test, batch_size=self.batch_size, num_workers=self.num_workers
+            self.test,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
