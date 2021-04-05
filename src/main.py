@@ -45,7 +45,7 @@ def main():
     )
 
     # model
-    model = FashionMNISTClassfier()
+    model = FashionMNISTClassfier(args.learning_rate)
     early_stop_callback = EarlyStopping(monitor="val_loss")
     checkpoint_callback = ModelCheckpoint(
         dirpath=args.model_dir,
