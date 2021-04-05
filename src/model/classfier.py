@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -20,8 +21,9 @@ class FashionMNISTClassfier(pl.LightningModule):
         "Ankle Boot",
     )
 
-    def __init__(self):
+    def __init__(self, learning_rate=1e-3):
         super().__init__()
+        self.save_hyperparameters()
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -74,4 +76,10 @@ class FashionMNISTClassfier(pl.LightningModule):
             )
 
     def configure_optimizers(self):
-        return optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        parser.add_argument("--learning_rate", type=float, default=0.0001)
+        return parser
