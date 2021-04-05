@@ -9,8 +9,25 @@ from model.classfier import FashionMNISTClassfier
 from util.logger import ImagePredictionLogger
 
 
-def main(args):
-    data = FashionMNISTDataModule(args.data_dir, args.batch_size, args.num_workers)
+def main():
+    pl.seed_everything(10086)
+
+    # args
+    parser = ArgumentParser()
+    parser.add_argument("--data_dir", type=str, default="./data/")
+    parser.add_argument("--model_dir", type=str, default="./model/")
+    parser.add_argument("--log_dir", type=str, default="./log/")
+    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--num_workers", type=int, default=0)
+    parser.add_argument("--pin_memory", type=bool, default=False)
+    parser = pl.Trainer.add_argparse_args(parser)
+    parser = FashionMNISTClassfier.add_model_specific_args(parser)
+    args = parser.parse_args()
+
+    # data
+    data = FashionMNISTDataModule(
+        args.data_dir, args.batch_size, args.num_workers, args.pin_memory
+    )
     data.prepare_data()
     data.setup()
     samples = next(iter(data.val_dataloader()))
@@ -27,38 +44,28 @@ def main(args):
         "Ankle Boot",
     )
 
+    # model
     model = FashionMNISTClassfier()
+    early_stop_callback = EarlyStopping(monitor="val_loss")
     checkpoint_callback = ModelCheckpoint(
-        monitor="Validation Loss",
         dirpath=args.model_dir,
-        filename="fashion-mnist-v1-{epoch:02d}-{Validation Loss:.2f}",
+        filename="fashion-mnist-{epoch:02d}-{val_loss:.2f}",
+        monitor="val_loss",
     )
-    early_stop_callback = EarlyStopping(monitor="Validation Loss", patience=5)
     image_prediction_callback = ImagePredictionLogger(samples, classes)
-
-    logger = TensorBoardLogger(args.log_dir, name="classifier")
-
+    logger = TensorBoardLogger(save_dir=args.log_dir, name="classifier", log_graph=True)
     trainer = pl.Trainer.from_argparse_args(
         args,
-        callbacks=[checkpoint_callback, early_stop_callback, image_prediction_callback],
+        callbacks=[early_stop_callback, checkpoint_callback, image_prediction_callback],
         logger=logger,
     )
 
+    # training
     trainer.fit(model, datamodule=data)
+
+    # testing
     trainer.test(datamodule=data)
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-
-    parser.add_argument("--data_dir", type=str, default="./data/")
-    parser.add_argument("--model_dir", type=str, default="./model/")
-    parser.add_argument("--log_dir", type=str, default="./log/")
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--num_workers", type=int, default=0)
-
-    parser = pl.Trainer.add_argparse_args(parser)
-
-    args = parser.parse_args()
-
-    main(args)
+    main()
