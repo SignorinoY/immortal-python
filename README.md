@@ -12,7 +12,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install require
 ## Usage
 
 ```bash
-python src/main.py --gpus 1 --batch_size 64 --num_workers 2
+python src/main.py --gpus 1 --learning_rate 1e-4 --batch_size 256 --num_workers 4 --pin_memory True
 ```
 
 ## Contributing

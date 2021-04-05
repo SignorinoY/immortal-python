@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
+
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-import torch.optim as optim
+import torchmetrics
 from torch import nn
 
 
@@ -25,6 +26,10 @@ class FashionMNISTClassfier(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.example_input_array = torch.zeros(1, 1, 28, 28)
+
+        self.train_acc = torchmetrics.Accuracy()
+        self.val_acc = torchmetrics.Accuracy()
+
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -45,14 +50,18 @@ class FashionMNISTClassfier(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
-        self.log("train_loss", loss)
+        _, preds = torch.max(y_hat, 1)
+        self.train_acc(preds, y)
+        self.log_dict({"train_loss": loss, "train_acc": self.train_acc})
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
-        self.log("val_loss", loss)
+        _, preds = torch.max(y_hat, 1)
+        self.val_acc(preds, y)
+        self.log_dict({"val_loss": loss, "val_acc": self.val_acc})
 
     def test_step(self, batch, batch_idx):
         x, y = batch
