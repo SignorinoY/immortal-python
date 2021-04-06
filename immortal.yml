@@ -1,0 +1,13 @@
+name: immortal
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.8
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cudatoolkit=11.1
+  - pytorch-lightning
+  - torchmetrics
+  - matplotlib
