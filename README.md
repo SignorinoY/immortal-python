@@ -4,15 +4,21 @@ An example project to illustrate the use of GPU servers for computing is based o
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install required packages.
+Use the package manager [conda](https://www.anaconda.com/) to install required packages.
 
 ```bash
+conda env create --file immortal.yml
 ```
 
 ## Usage
 
 ```bash
+conda activate immortal
 python src/main.py --gpus 1 --learning_rate 1e-4 --batch_size 256 --num_workers 4 --pin_memory True
+```
+
+```bash
+tensorboard --logdir ./log/
 ```
 
 ## Contributing
